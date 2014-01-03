@@ -1,0 +1,3 @@
+lib/systemd/system/agobluescan.service
+opt/agocontrol/bin/agobluescan.py
+etc/opt/agocontrol/conf.d/bluescan.conf

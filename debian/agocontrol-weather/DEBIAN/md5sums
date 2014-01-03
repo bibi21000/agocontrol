@@ -1,0 +1,3 @@
+bdc23c4bf97666e167adc66c401e2421  lib/systemd/system/agoweather.service
+302708623e8e3f67648b69bddd412a72  opt/agocontrol/bin/agoweather.py
+e7d9313cca45f52a9bd6561ae9632108  usr/share/doc/agocontrol-weather/changelog.Debian.gz

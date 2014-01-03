@@ -1,0 +1,34 @@
+Source: agocontrol-bibi21000
+Maintainer: Sébastien GALLET <sgallet@gmail.com>
+Section: misc
+Priority: optional
+Build-Depends: debhelper (>= 8), python, libagoclient1.0-dev, libagoclient1.0, python-agoclient
+Standards-Version: 3.9.2
+
+Package: agocontrol-tvsamsung
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient
+Description: Samsung TVs (C-Serie, D-Serie, ...)
+
+Package: agocontrol-weather
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient, python-simplejson
+Description: Samsung TVs (C-Serie, D-Serie, ...)
+
+Package: agocontrol-bluescan
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient, python-bluez, bluetooth
+Description: Bluetooth detector
+
+Package: agocontrol-tellstick
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient, telldus-core
+Description: Tellstick / Tellstick Duo driver
+
+Package: agocontrol-bibi21000
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, libagoclient1.0, agocontrol,
+ python-agoclient, libagoclient1.0-dev,
+ agocontrol-zwave,
+ agocontrol-tvsamsung, agocontrol-weather, agocontrol-bluescan
+Description: My personal installation :)

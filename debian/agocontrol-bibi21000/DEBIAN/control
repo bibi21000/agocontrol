@@ -1,0 +1,9 @@
+Package: agocontrol-bibi21000
+Version: 1.0-001
+Architecture: all
+Maintainer: Sébastien GALLET <sgallet@gmail.com>
+Installed-Size: 25
+Depends: libagoclient1.0, agocontrol, python-agoclient, libagoclient1.0-dev, agocontrol-zwave, agocontrol-tvsamsung, agocontrol-weather, agocontrol-bluescan
+Section: misc
+Priority: optional
+Description: My personal installation :)

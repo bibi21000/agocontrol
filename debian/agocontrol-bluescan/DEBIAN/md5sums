@@ -1,0 +1,3 @@
+4dc7fc108ff8da488deb793615c6c443  lib/systemd/system/agobluescan.service
+c5810c68683e1924616d7a90446ea5b2  opt/agocontrol/bin/agobluescan.py
+e7d9313cca45f52a9bd6561ae9632108  usr/share/doc/agocontrol-bluescan/changelog.Debian.gz

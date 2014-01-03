@@ -1,0 +1,3 @@
+lib/systemd/system/agotvsamsung.service
+opt/agocontrol/bin/agotvsamsung.py
+etc/opt/agocontrol/conf.d/tvsamsung.conf

@@ -1,0 +1,3 @@
+lib/systemd/system/agotellstick.service
+opt/agocontrol/bin/agotellstick.py
+etc/opt/agocontrol/conf.d/tellstick.conf

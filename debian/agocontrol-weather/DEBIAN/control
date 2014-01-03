@@ -1,0 +1,10 @@
+Package: agocontrol-weather
+Source: agocontrol-bibi21000
+Version: 1.0-001
+Architecture: all
+Maintainer: Sébastien GALLET <sgallet@gmail.com>
+Installed-Size: 73
+Depends: python-agoclient, python-simplejson
+Section: misc
+Priority: optional
+Description: Samsung TVs (C-Serie, D-Serie, ...)
