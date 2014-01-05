@@ -11,6 +11,8 @@
 
      Install telldus-core : http://developer.telldus.com/wiki/TellStickInstallationUbuntu
 
+     There is a "new" binding available for python : http://developer.telldus.com/browser/bindings/python/native
+
 """
 import sys,os
 try :
@@ -250,6 +252,7 @@ class Telldusd:
     """
     Interface to the telldusd daemon. It encapsulates ALL the calls to
     the telldus daemon.
+    http://developer.telldus.se/doxygen/group__core.html
     """
     def __init__(self):
         '''
