@@ -48,6 +48,11 @@ TELLSTICK_STOP = 512
 #Sensor value types
 TELLSTICK_TEMPERATURE = 1
 TELLSTICK_HUMIDITY = 2
+TELLSTICK_RAINRATE = 4
+TELLSTICK_RAINTOTAL = 8
+TELLSTICK_WINDDIRECTION = 16
+TELLSTICK_WINDAVERAGE = 32
+TELLSTICK_WINDGUST = 64
 #Error codes
 TELLSTICK_SUCCESS = 0
 TELLSTICK_ERROR_NOT_FOUND = -1
@@ -57,6 +62,9 @@ TELLSTICK_ERROR_METHOD_NOT_SUPPORTED = -4
 TELLSTICK_ERROR_COMMUNICATION = -5
 TELLSTICK_ERROR_CONNECTING_SERVICE = -6
 TELLSTICK_ERROR_UNKNOWN_RESPONSE = -7
+TELLSTICK_ERROR_SYNTAX = -8
+TELLSTICK_ERROR_BROKEN_PIPE = -9
+TELLSTICK_ERROR_COMMUNICATING_SERVICE = -10
 TELLSTICK_ERROR_UNKNOWN = -99
 #Device typedef
 TELLSTICK_TYPE_DEVICE = 1
@@ -72,7 +80,62 @@ TELLSTICK_CHANGE_NAME = 1
 TELLSTICK_CHANGE_PROTOCOL = 2
 TELLSTICK_CHANGE_MODEL = 3
 TELLSTICK_CHANGE_METHOD = 4
-
+TELLSTICK_CHANGE_AVAILABLE = 5
+TELLSTICK_CHANGE_FIRMWARE = 6
+#Controller typedef
+TELLSTICK_CONTROLLER_TELLSTICK = 1
+TELLSTICK_CONTROLLER_TELLSTICK_DUO = 2
+TELLSTICK_CONTROLLER_TELLSTICK_NET = 3
+#From http://developer.telldus.se/wiki/TellStick_conf
+TELLDUS_MODELS = {
+    'arctech' : {
+        'codeswitch' : ['house','unit'],
+        'bell': ['house'],
+        'selflearning-switch': ['house','unit'],
+        'selflearning-dimmer': ['house','unit'],
+    },
+    'brateck' : {
+        'brateck' : ['house'],
+    },
+    'everflourish' : {
+        'everflourish' : ['house','unit'],
+    },
+    'fuhaote' : {
+        'fuhaote' : ['code'],
+    },
+    'hasta' : {
+        'hasta' : ['house','unit'],
+    },
+    'brateck' : {
+        'brateck' : ['house'],
+    },
+    'ikea' : {
+        'ikea' : ['system','units','fade'],
+    },
+    'risingsun' : {
+        'codeswitch' : ['house','unit'],
+        'selflearning': ['house','unit'],
+    },
+    'sartano' : {
+        'sartano' : ['code'],
+    },
+    'silvanchip' : {
+        'ecosavers' : ['house','unit'],
+        'kp100': ['house'],
+    },
+    'upm' : {
+        'upm' : ['house','unit'],
+    },
+    'waveman' : {
+        'waveman' : ['house','unit'],
+    },
+    'x10' : {
+        'x10' : ['house','unit'],
+    },
+    'yidong' : {
+        'yidong' : ['unit'],
+    },
+}
 timers = {} #timerlist
 
 def sensor_callback(protocol, model, id, dataType, value, timestamp, callbackId, context):
@@ -120,6 +183,42 @@ def device_callback(deviceId, method, value, callbackId, context):
     t.start()
     timers[deviceId] = t #put timer in list, to allow later cancellation
 
+def device_change_callback(deviceId, change_event, change_type, callbackId, context):
+    global timers
+    print "device change callback!"
+    print method
+    if (deviceId == 1):
+            # is turning on deviceId 1 here, so just return if events for that device are picked up
+            return
+
+    t = 0
+    print "Received event for device %d" % (deviceId,)
+    if (deviceId in timers):
+            # a timer already exists for this device, it might be running so interrupt it
+            # Many devices (for example motion detectors) resends their messages many times to ensure that they
+            # are received correctly. In this example, we don't want to run the turnOn/turnOff methods every time, instead we
+            # start a timer, and run the method when the timer is finished. For every incoming event on this device, the timer
+            # is restarted.
+            t = timers[deviceId]
+            t.cancel()
+    if (change_event == TELLSTICK_DIM):
+        print int(float(string_at(value))/2.55)+1
+        #t = Timer(delay_rf/1000.0, client.emitEvent,[lib.make_device_id(deviceId), "event.device.statechanged", int(float(string_at(value))/2.55)+1, ""])
+    elif (change_event == TELLSTICK_TURNON):
+        pass
+        #t = Timer(delay_rf/1000.0, client.emitEvent,[lib.make_device_id(deviceId), "event.device.statechanged", "255", ""])
+    elif (change_event == TELLSTICK_TURNOFF):
+        pass
+        #t = Timer(delay_rf/1000.0, client.emitEvent,[lib.make_device_id(deviceId), "event.device.statechanged", "0", ""])
+    else :
+        syslog.syslog(syslog.LOG_ERR, 'Unknown command received for %s:' % deviceId)
+        syslog.syslog(syslog.LOG_ERR, 'method = %s' % method)
+        syslog.syslog(syslog.LOG_ERR, 'value = %s' % value)
+        syslog.syslog(syslog.LOG_ERR, 'callbackId = %s' % callbackId)
+        syslog.syslog(syslog.LOG_ERR, 'context = %s' % context)
+    t.start()
+    timers[deviceId] = t #put timer in list, to allow later cancellation
+
 #function to be called when device event occurs, even for unregistered devices
 def raw_callback(data, controllerId, callbackId, context):
     print string_at(data)
@@ -128,6 +227,7 @@ def raw_callback(data, controllerId, callbackId, context):
 
 SENSORFUNC = CFUNCTYPE(None, POINTER(c_ubyte), POINTER(c_ubyte), c_int, c_int, POINTER(c_ubyte), c_int, c_int, c_void_p)
 DEVICEFUNC = CFUNCTYPE(None, c_int, c_int, POINTER(c_ubyte), c_int, c_void_p)
+DEVICECHANGEFUNC = CFUNCTYPE(None, c_int, c_int, c_int, c_int, c_void_p)
 RAWFUNC = CFUNCTYPE(None, POINTER(c_ubyte), c_int, c_int, c_void_p)
 
 class TelldusException(Exception):
@@ -174,6 +274,15 @@ class Telldusd:
             self._tdlib.tdInit()
         except:
             raise TelldusException("Could not initialize telldus-core library : %s" % (traceback.format_exc()))
+
+    def close(self):
+        '''
+        Close the lib
+        '''
+        self.unregister_device_event()
+        self.unregister_device_change_event()
+        self.unregister_sensor_event()
+        self._tdlib.tdClose()
 
     def register_device_event(self, callback):
         '''
@@ -225,7 +334,6 @@ class Telldusd:
             return self._sensor_event_cb_id
         except:
             raise TelldusException("Could not register the sensor event callback : %s" % (traceback.format_exc()))
-
 
     def unregister_sensor_event(self):
         '''
@@ -397,6 +505,21 @@ class Telldusd:
         '''
         self._tdlib.tdLearn(c_int(deviceid))
 
+    def add_device(self):
+        '''
+        Add a device to telldus
+        @return the id of the new device
+        '''
+        return self._tdlib.tdAddDevice()
+
+    def remove_device(self, deviceid):
+        '''
+        Remove a device from telldus
+        @param deviceid : id of the module
+        @return True if success, false otherwise
+        '''
+        return self._tdlib.tdRemoveDevice(c_int(deviceid))
+
     def dim(self, deviceid, level):
         '''
         Dims the device level should be between 0 and 100
@@ -516,3 +639,5 @@ def messageHandler(internalid, content):
 client.addHandler(messageHandler)
 
 client.run()
+
+lib.close()
